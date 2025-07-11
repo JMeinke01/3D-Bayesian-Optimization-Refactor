@@ -4,10 +4,10 @@ function rand_sample(X_star::AbstractMatrix{<:Real}, num_samples::Int,
     seen = Set{Tuple{<:Real, <:Real}}()
     d = size(X_star, 1)
     for i in 1 : num_samples
-        randVal = rand(1:d)
+        randVal = rand(1 : d)
         samp = tuple(X_star[randVal, :]...)
         while samp in seen
-            randVal = rand(1 : rows)
+            randVal = rand(1 : d)
             samp = tuple(X_star[randVal, :]...)
         end
         push!(seen, samp)

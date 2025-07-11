@@ -17,8 +17,8 @@ function get_noise_variance(kernel::AbstractKernel)
     return kernel.hyperparameters[1]
 end
 
-function eval_k(rbf::RadialBasisFunction, x::AbstractMatrix{<:Real}, 
-    y::AbstractMatrix{<:Real})
+function eval_k(rbf::RadialBasisFunction, x::AbstractVector{<:Real}, 
+    y::AbstractVector{<:Real})
     return rbf.kernel(x, y)
 end
 
@@ -58,7 +58,7 @@ function eval_KxX(kernel::AbstractKernel, X::AbstractMatrix{<:Real},
     cov = zeros(d, N)
     for i in 1 : N
         for j in 1 : m
-            cov[j, i] = eval_k(kernel, X[i, :], X_star[j, :])
+            cov[j, i] = eval_k(kernel, X[j, :], X_star[i, :])
         end        
     end
     return cov
@@ -67,6 +67,7 @@ end
 # Calculates and creates the training set covariance matrix, KXX
 function eval_KXX(kernel::AbstractKernel, X::AbstractMatrix{<:Real}, σ::Real) 
     d = size(X)[1]
+    cov = zeros(d, d)
     for i in 1 : d
         for j in i : d
             cov[i,j] = eval_k(kernel, X[i, :], X[j, :])
@@ -79,7 +80,7 @@ end
 
 # Evaluates the kernel at given points
 function eval_k(kernel::AbstractKernel, 
-    x::AbstractMatrix{<:Real}, y::AbstractMatrix{<:Real}) 
+    x::AbstractVector{<:Real}, y::AbstractVector{<:Real}) 
     return kernel(x, y)
 end
 
@@ -97,6 +98,7 @@ function update_KXX(kernel::AbstractKernel, Κ::AbstractMatrix{<:Real},
     prev::Int, X::AbstractMatrix{<:Real}, σ) 
     for i in 1 : prev + 1
         Κ[prev + 1, i] = eval_k(kernel, X[prev + 1, :], X[i, :])
+        Κ[i, prev + 1] = Κ[prev + 1, i]
     end
     Κ[prev + 1, prev + 1] += σ
     return Κ

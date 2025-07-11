@@ -15,7 +15,7 @@ mutable struct GaussianProcess{T1, T2, T3} <: AbstractGaussianProcess
 end
 
 function GaussianProcess(μ::T1, kernel::T2, Κ_ss::T3, 
-    Κ_xx::T3, Κ_xs::T3) where {T1 <: MeanFunction, T2 <: AbstractKernel, 
+    Κ_xx::T3, Κ_xs::T3) where {T1 <: Function, T2 <: AbstractKernel, 
     T3 <: AbstractMatrix{<: Real}}
     return GaussianProcess{T1, T2, T3}(μ, kernel, Κ_ss, Κ_xx, Κ_xs)
 end
@@ -37,15 +37,14 @@ function predict_f(GP::AbstractGaussianProcess, X::AbstractMatrix{<:Real},
     return μ_post, sqrt.(σ_post)
 end
 
-
 function calculate_α(L::LinearAlgebra.Cholesky, y::AbstractVector{<:Real}, 
-    μ::MeanFunction, X::AbstractMatrix{<:Real}) 
+    μ::Function, X::AbstractMatrix{<:Real}) 
     return L \ (y - μ(X))
 end
 
-function calculate_μ_post(α::AbstractVector{<:Real}, Κ_xs::AbstractMatrix{<:Real},
-    μ::MeanFunction, X_star::AbstractMatrix{<:Real})
-    return μ(X_star) + dot(Κ_xs, α)
+function calculate_μ_post(α::AbstractMatrix{<:Real}, Κ_xs::AbstractMatrix{<:Real},
+    μ::Function, X_star::AbstractMatrix{<:Real})
+    return μ(X_star) + Κ_xs' * α
 end
 
 function calculate_Α(L::LinearAlgebra.Cholesky, Κ_xs::AbstractMatrix{<:Real})
@@ -53,7 +52,7 @@ function calculate_Α(L::LinearAlgebra.Cholesky, Κ_xs::AbstractMatrix{<:Real})
 end
 
 function calculate_σ_post(Α::AbstractMatrix{<:Real}, Κ_ss::AbstractMatrix{<:Real})
-    Σ =  Κ_ss - dot(Α, Α)
+    Σ =  Κ_ss - Α' * Α
     return diag(Σ)
 end
 
