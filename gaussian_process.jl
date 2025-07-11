@@ -1,4 +1,6 @@
 using LinearAlgebra
+using Distributions
+
 includes("mean_functions.jl")
 includes("kernels.jl")
 
