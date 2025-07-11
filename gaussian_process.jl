@@ -1,8 +1,8 @@
 using LinearAlgebra
 using Distributions
 
-includes("mean_functions.jl")
-includes("kernels.jl")
+# includes("mean_functions")
+# includes("kernels.jl")
 
 abstract type AbstractGaussianProcess end
 
@@ -15,7 +15,7 @@ mutable struct GaussianProcess{T1, T2, T3} <: AbstractGaussianProcess
 end
 
 function GaussianProcess(μ::T1, kernel::T2, Κ_ss::T3, 
-    Κ_xx::T4, Κ_xs::T5) where {T1 <: MeanFunction, T2 <: AbstractKernel, 
+    Κ_xx::T3, Κ_xs::T3) where {T1 <: MeanFunction, T2 <: AbstractKernel, 
     T3 <: AbstractMatrix{<: Real}}
     return GaussianProcess{T1, T2, T3}(μ, kernel, Κ_ss, Κ_xx, Κ_xs)
 end
@@ -64,15 +64,4 @@ function expected_improvement(GP::AbstractGaussianProcess, X::AbstractMatrix{<:R
     imp = @. (f_opt - μ - ζ)
     z = imp ./ σ
     return imp .* cdf.(Ref(Normal()), z) .+ σ .* pdf.(Ref(Normal()), z), μ
-end
-
-function best_sampling_point(acq_funq::AbstractVector{<:Real}, X_star::AbstractVector{<:Real},
-    X::AbstractVector{<:Real}, f_obj::Function, σ::Real)
-    samp_pt = findmax(acq_func)
-    xy = X_star[(samp_pt[2])[1], :]
-    z = f_obj(xy[1], xy[2])
-    val_vec = [xy[1], xy[2], z + σ]
-    X = vcat(X, val_vec')
-    println(z + σ)
-    return X
 end

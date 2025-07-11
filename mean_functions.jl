@@ -2,7 +2,7 @@ struct MeanFunction{T1}
     mean::T1
 end
 
-function MeanFunction(mean::T1) where {T1 <: Funtion}
+function MeanFunction(mean::T1) where {T1 <: Function}
     return MeanFunction{T1}(mean)
 end
 

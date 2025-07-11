@@ -9,7 +9,7 @@ function matern32(θ)
         frac = sqrt(3) * dist / ℓ
         return  σ^2 * (1 + frac) * exp(-frac)
     end
-    return κ, θ
+    return κ
 end
 
 # Given hyperparameters, creates a new Matern52 kernel
@@ -23,7 +23,7 @@ function matern52(θ)
         frac = sqrt(5) * dist / ℓ
         return  σ^2 * (1 + frac + (frac^2) / 3) * exp(-frac)
     end
-    return κ, θ
+    return κ
 end
 
 # Given hyperparameters, creates a new squared exponential kernel
@@ -36,7 +36,7 @@ function squared_exponential(θ)
         dist = diff' * diff
         return  σ^2 * exp(-dist /(2 * ℓ^2))
     end
-    return κ, θ
+    return κ
 end
 
 # Given hyperparameters, creates a new periodic kernel
@@ -50,5 +50,5 @@ function periodic(θ)
         dist = sqrt(diff' * diff)
         return σ^2 * exp(-2*sin(pi*dist / p)^2 / ℓ^2)            
     end
-    return κ, θ
+    return κ
 end

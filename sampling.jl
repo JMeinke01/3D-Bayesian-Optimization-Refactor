@@ -5,10 +5,10 @@ function rand_sample(X_star::AbstractMatrix{<:Real}, num_samples::Int,
     d = size(X_star, 1)
     for i in 1 : num_samples
         randVal = rand(1:d)
-        samp = tuple(X[randVal, :]...)
+        samp = tuple(X_star[randVal, :]...)
         while samp in seen
             randVal = rand(1 : rows)
-            samp = tuple(X[randVal, :]...)
+            samp = tuple(X_star[randVal, :]...)
         end
         push!(seen, samp)
         samp_pt = f_obj(samp[1], samp[2])
