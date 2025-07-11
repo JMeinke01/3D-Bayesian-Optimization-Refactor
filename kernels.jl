@@ -1,0 +1,99 @@
+abstract type AbstractKernel end
+function eval_kernel(k::AbstractKernel) end
+
+
+struct RadialBasisFunction{T1, T2} <: AbstractKernel
+    kernel::T1
+    hyperparameters::T2
+end
+
+function RadialBasisFunction(
+    kernel::T1,
+    hyperparameters::T2) where {T1 <: Function, T2 <: AbstractVector{<:Real}}
+    return RadialBasisFunction{T1, T2}(kernel, hyperparameters)
+end
+
+function eval_k(rbf::RadialBasisFunction, x, y)
+    noise_variance = get_noise_variance(rbf)
+    return noise_variance * rbf.kernel(x, y)
+end
+
+(rbf::RadialBasisFunction)(x, y) = eval_k(rbf, x, y)    
+
+struct Periodic{T1, T2} <: AbstractKernel
+    kernel::T1
+    hyperparameters::T2
+end
+
+function Periodic(kernel::T1, 
+    hyperparameters::T2) where {T1 <: Function, T2 <: AbastractVector{<:Real}}
+    return Periodic{T1, T2}(kernel, hyperparameters)
+end
+
+# Creates the covariance matrix of the observed data which can be expanded, k_xx
+function eval_kxx(kernel::AbstractKernel, X::AbstractMatrix{<:Real}, d::Int, σ::Real)
+    cov = zeros(d, d)
+    N = size(X)[1]
+    for i in 1 : N
+        for j in i : N
+            cov[i, j] = kernel(X[i, :], X[j, :])
+            cov[j, i] = cov[i, j]
+            if i == j
+                cov[i, j] += σ
+            end
+        end
+    end
+    return cov
+end
+
+#  Calculates and creates the cross covariance matrix, KxX
+function eval_KxX(kernel::AbstractKernel, X::AbstractMatrix{<:Real}, 
+    X_star::AbstractMatrix{<:Real}, d::Int)
+    m = size(X)[1]
+    N = size(X_star)[1]
+    cov = zeros(d, N)
+    for i in 1 : N
+        for j in 1 : m
+            cov[j, i] = kernel(X[i, :], X_star[j, :])
+        end        
+    end
+    return cov
+end
+
+# Calculates and creates the training set covariance matrix, KXX
+function eval_KXX(kernel::AbstractKernel, X::AbstractMatrix{<:Real}, σ::Real) 
+    d = size(X)[1]
+    for i in 1 : d
+        for j in i : d
+            cov[i,j] = kernel(X[i, :], X[j, :])
+            cov[j, i] = cov[i, j]
+        end
+    end
+    cov += σ * I
+    return cov
+end
+
+# Evaluates the kernel at given points
+function eval_k(kernel::AbstractKernel, 
+    x::AbstractMatrix{<:Real}, y::AbstractMatrix{<:Real}) 
+    return kernel(x, y)
+end
+
+# Updates the KxX covariance matrix to accomodate the new observation
+function update_kxX(kernel::AbstractKernel, Κ::AbstractMatrix{<:Real}, prev::Int, 
+    X::AbstractMatrix{<:Real}, X_star::AbstractMatrix{<:Real})
+    for i in 1 : prev
+        Κ[prev + 1, i] = kernel(X[prev + 1, :], X_star[i, :])
+    end
+    return Κ
+end
+
+# Updates the KxX covariance matrix to accomodate the new observation
+function update_KXX(kernel::AbstractKernel, Κ::AbstractMatrix{<:Real}, 
+    prev::Int, X::AbstractMatrix::{<:Real}, σ) 
+    for i in 1 : prev + 1
+        Κ[prev + 1, i] = kernel(X[prev + 1, :], X[i, :])
+    end
+    Κ[prev + 1, prev + 1] += σ
+    return Κ
+end
