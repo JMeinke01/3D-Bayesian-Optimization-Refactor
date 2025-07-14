@@ -29,7 +29,7 @@ function predict_f(GP::AbstractGaussianProcess, X::AbstractMatrix{<:Real},
     Κ_xx_v = @view Κ_xx[1:prev, 1:prev]
     Κ_xs_v = @view Κ_xs[1:prev, 1:size(Κ_xs, 2)]
     y = X[:, 3]
-    L = cholesky(Κ_xx_v)
+    L = cholesky(Κ_xx_v) # Change name later
     α = calculate_α(L, y, μ, X)
     μ_post = calculate_μ_post(α, Κ_xs_v, μ, X_star)
     Α = calculate_Α(L, Κ_xs_v)
@@ -48,7 +48,7 @@ function calculate_μ_post(α::AbstractMatrix{<:Real}, Κ_xs::AbstractMatrix{<:R
 end
 
 function calculate_Α(L::LinearAlgebra.Cholesky, Κ_xs::AbstractMatrix{<:Real})
-    return L \ Κ_xs
+    return L.L \ Κ_xs
 end
 
 function calculate_σ_post(Α::AbstractMatrix{<:Real}, Κ_ss::AbstractMatrix{<:Real})

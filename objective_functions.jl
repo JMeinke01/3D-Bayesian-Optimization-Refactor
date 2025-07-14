@@ -1,16 +1,16 @@
-function cross_in_tray(x, y) 
+function cross_in_tray(x::AbstractVector{<:Real}, y::AbstractVector{<:Real}) 
     opt = -2.06261
     f(x, y) = @. -0.0001 * (abs(sin.(x) * sin.(y) * exp(abs(100.0 - (sqrt(x^2 + y^2) / pi)))) + 1) ^ 0.1
     return (opt, f)
 end
 
-function mccormick(x, y)
+function mccormick(x::AbstractVector{<:Real}, y::AbstractVector{<:Real})
     opt = -1.9133
-    f(x,y) = @. sin.(x + y) + (x - y)^2 - 1.5 * x + 2.5 * y + 1
+    f(x,y) = @. sin(x + y) + (x - y)^2 - 1.5 * x + 2.5 * y + 1
     return (opt, f)
 end
 
-function rosenbrock(x, y) 
+function rosenbrock(x::AbstractVector{<:Real}, y::AbstractVector{<:Real}) 
     opt = 0.0
     f(x,y) = @. (1 - x)^2 + 100 * (y - x^2)^2
     return (opt, f)

@@ -87,7 +87,8 @@ end
 # Updates the KxX covariance matrix to accomodate the new observation
 function update_kxX(kernel::AbstractKernel, Κ::AbstractMatrix{<:Real}, prev::Int, 
     X::AbstractMatrix{<:Real}, X_star::AbstractMatrix{<:Real})
-    for i in 1 : prev
+    len = size(X_star)[1]
+    for i in 1 : len
         Κ[prev + 1, i] = eval_k(kernel, X[prev + 1, :], X_star[i, :])
     end
     return Κ
