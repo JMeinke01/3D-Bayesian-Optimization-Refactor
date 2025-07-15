@@ -20,7 +20,7 @@ function main()
     σ = 1e-6 # Noise variable
     𝒟 = rand_sample(XY, num_init_samples, f, σ)
     θ = (3.0, 1.0) # Hyperparameters in the form of (σ, ℓ) or (σ, ℓ, p)
-    κ = squared_exponential(θ)
+    κ, θ = squared_exponential(θ)
     rbf = RadialBasisFunction(κ, θ)
 
     # We will use the value of 1e-6 for jitter in our covariance matrix calculations

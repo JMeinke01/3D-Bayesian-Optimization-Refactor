@@ -19,7 +19,7 @@ end
 
 function eval_k(rbf::RadialBasisFunction, x::AbstractVector{<:Real}, 
     y::AbstractVector{<:Real})
-    return rbf.kernel(x, y)
+    return rbf.kernel(x, y, rbf.hyperparameters)
 end
 
 (rbf::RadialBasisFunction)(x, y) = eval_k(rbf, x, y)    
@@ -79,9 +79,9 @@ function eval_KXX(kernel::AbstractKernel, X::AbstractMatrix{<:Real}, σ::Real)
 end
 
 # Evaluates the kernel at given points
-function eval_k(kernel::AbstractKernel, 
+function eval_k(k::Periodic, 
     x::AbstractVector{<:Real}, y::AbstractVector{<:Real}) 
-    return kernel(x, y)
+    return k.kernel(x, y, k.hyperparameters)
 end
 
 # Updates the KxX covariance matrix to accomodate the new observation
