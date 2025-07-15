@@ -21,46 +21,43 @@ function GaussianProcess(μ::T1, kernel::T2, Κ_ss::T3,
 end
 
 function predict_f(GP::AbstractGaussianProcess, X::AbstractMatrix{<:Real}, 
-    X_star::AbstractMatrix{<:Real}, prev::Int)
+    X_star::AbstractMatrix{<:Real})
     Κ_ss = GP.Κ_ss
     Κ_xx = GP.Κ_xx
     Κ_xs = GP.Κ_xs
     μ = GP.μ
-    Κ_xx_v = @view Κ_xx[1:prev, 1:prev]
-    Κ_xs_v = @view Κ_xs[1:prev, 1:size(Κ_xs, 2)]
+    len = size(X)[1]
+    Κ_xx_v = @view Κ_xx[1:len, 1:len]
+    Κ_xs_v = @view Κ_xs[1:len, 1:size(X_star)[1]]
     y = X[:, 3]
-    L = cholesky(Κ_xx_v) # Change name later
-    α = calculate_α(L, y, μ, X)
-    μ_post = calculate_μ_post(α, Κ_xs_v, μ, X_star)
-    Α = calculate_Α(L, Κ_xs_v)
-    σ_post = calculate_σ_post(Α, Κ_ss)
+    Kc = cholesky(Κ_xx_v)
+    μ_post = calculate_μ_post(Kc, y, Κ_xs_v, μ, X, X_star)
+    σ_post = calculate_σ_post(Kc, Κ_xs_v, Κ_ss)
     return μ_post, sqrt.(σ_post)
 end
 
-function calculate_α(L::LinearAlgebra.Cholesky, y::AbstractVector{<:Real}, 
-    μ::Function, X::AbstractMatrix{<:Real}) 
-    return L \ (y - μ(X))
-end
 
-function calculate_μ_post(α::AbstractMatrix{<:Real}, Κ_xs::AbstractMatrix{<:Real},
-    μ::Function, X_star::AbstractMatrix{<:Real})
+function calculate_μ_post(Kc::LinearAlgebra.Cholesky, y::AbstractVector{<:Real}, Κ_xs::AbstractMatrix{<:Real},
+    μ::Function, X::AbstractMatrix{<:Real}, X_star::AbstractMatrix{<:Real})
+    α = Kc \ (y - μ(X))
     return μ(X_star) + Κ_xs' * α
 end
 
-function calculate_Α(L::LinearAlgebra.Cholesky, Κ_xs::AbstractMatrix{<:Real})
-    return L.L \ Κ_xs
-end
 
-function calculate_σ_post(Α::AbstractMatrix{<:Real}, Κ_ss::AbstractMatrix{<:Real})
+function calculate_σ_post(Kc::LinearAlgebra.Cholesky, Κ_xs::AbstractMatrix{<:Real}, 
+    Κ_ss::AbstractMatrix{<:Real})
+    Α = Kc.L \ Κ_xs
     Σ =  Κ_ss - Α' * Α
     return diag(Σ)
 end
 
 function expected_improvement(GP::AbstractGaussianProcess, X::AbstractMatrix{<:Real}, 
-    X_star::AbstractMatrix{<:Real}, prev::Int; ζ = 0.1)
-    μ, σ = predict_f(GP, X, X_star, prev)
+    X_star::AbstractMatrix{<:Real}; ζ = 0.1)
+    μ, σ = predict_f(GP, X, X_star)
     f_opt = minimum(X)
     imp = @. (f_opt - μ - ζ)
     z = imp ./ σ
     return imp .* cdf.(Ref(Normal()), z) .+ σ .* pdf.(Ref(Normal()), z), μ
 end
+
+# function maximum_likelihood_estimation(GP::AbstractGaussianProcess, )

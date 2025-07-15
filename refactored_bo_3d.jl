@@ -13,13 +13,13 @@ function main()
     y = range(-4, 4, length = 100)
     X = repeat(x, inner = length(y))
     Y = repeat(y, outer = length(x))
-    opt, f = mccormick(X, Y)
+    opt, f = cross_in_tray(X, Y)
     display(plot(x, y, f, st=:surface))
     XY = hcat(X,Y) # Creates a mesh
     num_init_samples = 10 # Initial samples
     σ = 1e-6 # Noise variable
     𝒟 = rand_sample(XY, num_init_samples, f, σ)
-    θ = (3.0, 0.05) # Hyperparameters in the form of (σ, ℓ) or (σ, ℓ, p)
+    θ = (3.0, 1.0) # Hyperparameters in the form of (σ, ℓ) or (σ, ℓ, p)
     κ = squared_exponential(θ)
     rbf = RadialBasisFunction(κ, θ)
 
@@ -34,7 +34,7 @@ function main()
     
     for i in num_init_samples : BUDGET
         # μ_post, std = predict_f(GP, 𝒟, XY, num_init_samples)
-        exp_imp, μ_post = expected_improvement(GP, 𝒟, XY, i)
+        exp_imp, μ_post = expected_improvement(GP, 𝒟, XY)
         # println(size(exp_imp), " ", size(μ_post))
         𝒟 = best_sampling_point(exp_imp, XY, 𝒟, f, σ)
         if i != BUDGET
@@ -42,8 +42,8 @@ function main()
             GP.Κ_xs = update_kxX(rbf, GP.Κ_xs, i, 𝒟[:, 1:2], XY)
         end
         # Z = reshape(μ_post, length(x), length(y))
-        # Z = reshape(μ_post, length(x), length(y))
-        # display(plot(x, y, Z, st =:surface))
+        Z = reshape(μ_post, length(x), length(y))
+        display(plot(x, y, Z, st =:surface))
         
     end
     println(minimum(𝒟[:, 3]))
