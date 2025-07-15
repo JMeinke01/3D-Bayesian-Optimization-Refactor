@@ -8,9 +8,9 @@ include("sampling.jl")
 include("gaussian_process.jl")
 
 function main()
-    BUDGET = 100
-    x = range(-4, 4, length = 100)
-    y = range(-4, 4, length = 100)
+    BUDGET = 200
+    x = range(-10, 10, length = 100)
+    y = range(-10, 10, length = 100)
     X = repeat(x, inner = length(y))
     Y = repeat(y, outer = length(x))
     opt, f = cross_in_tray(X, Y)
@@ -19,10 +19,16 @@ function main()
     num_init_samples = 10 # Initial samples
     σ = 1e-6 # Noise variable
     𝒟 = rand_sample(XY, num_init_samples, f, σ)
-    θ = (3.0, 1.0) # Hyperparameters in the form of (σ, ℓ) or (σ, ℓ, p)
+    θ = (3.0, 1.5) # Hyperparameters in the form of (σ, ℓ) or (σ, ℓ, p)
     κ, θ = squared_exponential(θ)
     rbf = RadialBasisFunction(κ, θ)
-
+    min = 0;
+    for i in 1 : size(XY)[1]
+        if f(XY[i, 1], XY[i, 2]) < min
+            min = f(XY[i, 1], XY[i, 2])
+        end
+    end
+    println(min)
     # We will use the value of 1e-6 for jitter in our covariance matrix calculations
     Κ_ss = eval_KXX(rbf, XY, 1e-6)
     Κ_xx = eval_kxx(rbf, 𝒟[:, 1:2], BUDGET, 1e-6)
