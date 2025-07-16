@@ -85,7 +85,7 @@ function eval_k(k::Periodic,
 end
 
 # Updates the KxX covariance matrix to accomodate the new observation
-function update_kxX(kernel::AbstractKernel, Κ::AbstractMatrix{<:Real}, prev::Int, 
+function update_kxX!(kernel::AbstractKernel, Κ::AbstractMatrix{<:Real}, prev::Int, 
     X::AbstractMatrix{<:Real}, X_star::AbstractMatrix{<:Real})
     len = size(X_star)[1]
     for i in 1 : len
@@ -95,7 +95,7 @@ function update_kxX(kernel::AbstractKernel, Κ::AbstractMatrix{<:Real}, prev::In
 end
 
 # Updates the KxX covariance matrix to accomodate the new observation
-function update_KXX(kernel::AbstractKernel, Κ::AbstractMatrix{<:Real}, 
+function update_KXX!(kernel::AbstractKernel, Κ::AbstractMatrix{<:Real}, 
     prev::Int, X::AbstractMatrix{<:Real}, σ) 
     for i in 1 : prev + 1
         Κ[prev + 1, i] = eval_k(kernel, X[prev + 1, :], X[i, :])

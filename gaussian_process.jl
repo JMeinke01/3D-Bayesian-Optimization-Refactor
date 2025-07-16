@@ -1,6 +1,7 @@
 using LinearAlgebra
 using Distributions
 
+
 # includes("mean_functions")
 # includes("kernels.jl")
 
@@ -60,10 +61,3 @@ function expected_improvement(GP::AbstractGaussianProcess, X::AbstractMatrix{<:R
     return imp .* cdf.(Ref(Normal()), z) .+ σ .* pdf.(Ref(Normal()), z), μ
 end
 
-function maximum_likelihood_estimation(Kc::LinearAlgebra.Cholesky, Κ_xx::AbstractMatrix{<:Real}, 
-    y::AbstractVector{<:Real})
-    α = 0.5 .* y' * Kc \ y 
-    β = log(det(Κ_xx))
-    c = size(Κ_xx)[1]/2 * log(π/2)
-    return α + β + c
-end

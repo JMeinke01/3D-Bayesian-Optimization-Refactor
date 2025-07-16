@@ -13,13 +13,13 @@ function main()
     y = range(-10, 10, length = 100)
     X = repeat(x, inner = length(y))
     Y = repeat(y, outer = length(x))
-    opt, f = cross_in_tray(X, Y)
+    opt, f = rosenbrock(X, Y)
     display(plot(x, y, f, st=:surface))
     XY = hcat(X,Y) # Creates a mesh
     num_init_samples = 10 # Initial samples
     σ = 1e-6 # Noise variable
     𝒟 = rand_sample(XY, num_init_samples, f, σ)
-    θ = (3.0, 1.5) # Hyperparameters in the form of (σ, ℓ) or (σ, ℓ, p)
+    θ = (10.0, 1.5) # Hyperparameters in the form of (σ, ℓ) or (σ, ℓ, p)
     κ, θ = squared_exponential(θ)
     rbf = RadialBasisFunction(κ, θ)
     min = 0;
@@ -44,8 +44,8 @@ function main()
         # println(size(exp_imp), " ", size(μ_post))
         𝒟 = best_sampling_point(exp_imp, XY, 𝒟, f, σ)
         if i != BUDGET
-            GP.Κ_xx = update_KXX(rbf, GP.Κ_xx, i, 𝒟[:, 1:2], 1e-6)
-            GP.Κ_xs = update_kxX(rbf, GP.Κ_xs, i, 𝒟[:, 1:2], XY)
+            GP.Κ_xx = update_KXX!(rbf, GP.Κ_xx, i, 𝒟[:, 1:2], 1e-6)
+            GP.Κ_xs = update_kxX!(rbf, GP.Κ_xs, i, 𝒟[:, 1:2], XY)
         end
         # Z = reshape(μ_post, length(x), length(y))
         Z = reshape(μ_post, length(x), length(y))
