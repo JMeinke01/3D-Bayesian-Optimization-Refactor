@@ -6,3 +6,6 @@ function negative_log_likelihood(Kc::LinearAlgebra.Cholesky, Κ_xx::AbstractMatr
     return α + β + c
 end
 
+function ∇negative_log_likelihood() 
+
+end

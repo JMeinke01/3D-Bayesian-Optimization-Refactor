@@ -13,15 +13,15 @@ function main()
     y = range(-10, 10, length = 100)
     X = repeat(x, inner = length(y))
     Y = repeat(y, outer = length(x))
-    opt, f = rosenbrock(X, Y)
+    opt, f = cross_in_tray(X, Y)
     display(plot(x, y, f, st=:surface))
     XY = hcat(X,Y) # Creates a mesh
     num_init_samples = 10 # Initial samples
     σ = 1e-6 # Noise variable
     𝒟 = rand_sample(XY, num_init_samples, f, σ)
     θ = (10.0, 1.5) # Hyperparameters in the form of (σ, ℓ) or (σ, ℓ, p)
-    κ, θ = squared_exponential(θ)
-    rbf = RadialBasisFunction(κ, θ)
+    # κ, θ = squared_exponential(θ)
+    rbf = squared_exponential(θ)
     min = 0;
     for i in 1 : size(XY)[1]
         if f(XY[i, 1], XY[i, 2]) < min
@@ -36,13 +36,14 @@ function main()
 
     μ_pri = mean_zero()
 
-    GP = GaussianProcess(μ_pri, κ, Κ_ss, Κ_xx, Κ_xs)
+    GP = GaussianProcess(μ_pri, rbf.kernel, Κ_ss, Κ_xx, Κ_xs)
     
     for i in num_init_samples : BUDGET
         # μ_post, std = predict_f(GP, 𝒟, XY, num_init_samples)
         exp_imp, μ_post = expected_improvement(GP, 𝒟, XY)
         # println(size(exp_imp), " ", size(μ_post))
         𝒟 = best_sampling_point(exp_imp, XY, 𝒟, f, σ)
+        println("hi")
         if i != BUDGET
             GP.Κ_xx = update_KXX!(rbf, GP.Κ_xx, i, 𝒟[:, 1:2], 1e-6)
             GP.Κ_xs = update_kxX!(rbf, GP.Κ_xs, i, 𝒟[:, 1:2], XY)
