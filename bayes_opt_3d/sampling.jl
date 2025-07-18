@@ -18,13 +18,13 @@ function rand_sample(X_star::AbstractMatrix{<:Real}, num_samples::Int,
     return X
 end
 
-function best_sampling_point(acq_funq::AbstractVector{<:Real}, X_star::AbstractVector{<:Real},
-    X::AbstractVector{<:Real}, f_obj::Function, σ::Real)
+function best_sampling_point(acq_func::AbstractMatrix{<:Real}, X_star::AbstractMatrix{<:Real},
+    X::AbstractMatrix{<:Real}, f_obj::Function, σ::Real)
     samp_pt = findmax(acq_func)
     xy = X_star[(samp_pt[2])[1], :]
     z = f_obj(xy[1], xy[2])
     val_vec = [xy[1], xy[2], z + σ]
     X = vcat(X, val_vec')
-    println("$(xy[1]), $(xy[2])", z + σ)
+    println("($(xy[1]), $(xy[2])) ", z + σ)
     return X
 end

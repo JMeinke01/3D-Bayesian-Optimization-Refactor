@@ -43,7 +43,6 @@ function main()
         exp_imp, μ_post = expected_improvement(GP, 𝒟, XY)
         # println(size(exp_imp), " ", size(μ_post))
         𝒟 = best_sampling_point(exp_imp, XY, 𝒟, f, σ)
-        println("hi")
         if i != BUDGET
             GP.Κ_xx = update_KXX!(rbf, GP.Κ_xx, i, 𝒟[:, 1:2], 1e-6)
             GP.Κ_xs = update_kxX!(rbf, GP.Κ_xs, i, 𝒟[:, 1:2], XY)
