@@ -1,3 +1,5 @@
+using Optim;
+
 function negative_log_likelihood(Kc::LinearAlgebra.Cholesky, Κ_xx::AbstractMatrix{<:Real}, 
     y::AbstractVector{<:Real})
     α = 0.5 .* y' * Kc \ y 

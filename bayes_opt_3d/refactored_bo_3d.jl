@@ -19,7 +19,7 @@ function main()
     num_init_samples = 10 # Initial samples
     σ = 1e-6 # Noise variable
     𝒟 = rand_sample(XY, num_init_samples, f, σ)
-    θ = (10.0, 1.5) # Hyperparameters in the form of (σ, ℓ) or (σ, ℓ, p)
+    θ = (1.0, 1.5) # Hyperparameters in the form of (σ, ℓ) or (σ, ℓ, p)
     # κ, θ = squared_exponential(θ)
     rbf = squared_exponential(θ)
     min = 0;
