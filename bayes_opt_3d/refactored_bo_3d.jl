@@ -19,9 +19,11 @@ function main()
     num_init_samples = 10 # Initial samples
     σ = 1e-6 # Noise variable
     𝒟 = rand_sample(XY, num_init_samples, f, σ)
-    θ = (1.0, 1.5) # Hyperparameters in the form of (σ, ℓ) or (σ, ℓ, p)
-    # κ, θ = squared_exponential(θ)
+    θ = [1.0, 1.0] # Hyperparameters in the form of (σ, ℓ) or (σ, ℓ, p)
     rbf = squared_exponential(θ)
+    # temp = linear_periodic(θ)
+    # temp2 = ∇linear_periodic()
+
     min = 0;
     for i in 1 : size(XY)[1]
         if f(XY[i, 1], XY[i, 2]) < min
@@ -46,6 +48,9 @@ function main()
         if i != BUDGET
             GP.Κ_xx = update_KXX!(rbf, GP.Κ_xx, i, 𝒟[:, 1:2], 1e-6)
             GP.Κ_xs = update_kxX!(rbf, GP.Κ_xs, i, 𝒟[:, 1:2], XY)
+        end
+        if i % 5 == 0 && i != num_init_samples
+            # nll = 
         end
         # Z = reshape(μ_post, length(x), length(y))
         Z = reshape(μ_post, length(x), length(y))
