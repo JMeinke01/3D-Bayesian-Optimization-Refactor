@@ -1,3 +1,4 @@
+include("kernels.jl")
 #=
     If θ is a vector of length 2, then the hyperparameters are θ[1] = σ
     and θ[2] = ℓ. If θ is length 3, then the first two entries represent

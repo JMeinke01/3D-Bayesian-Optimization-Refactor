@@ -25,6 +25,6 @@ function best_sampling_point(acq_func::AbstractMatrix{<:Real}, X_star::AbstractM
     z = f_obj(xy[1], xy[2])
     val_vec = [xy[1], xy[2], z + σ]
     X = vcat(X, val_vec')
-    println("($(xy[1]), $(xy[2])) ", z + σ)
+    # println("($(xy[1]), $(xy[2])) ", z + σ)
     return X
 end

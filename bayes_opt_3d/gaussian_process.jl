@@ -48,7 +48,6 @@ end
 function calculate_σ_post(Kc::LinearAlgebra.Cholesky, Κ_xs::AbstractMatrix{<:Real}, 
     Κ_ss::AbstractMatrix{<:Real})
     Α = Kc.L \ Κ_xs
-    println(size(Α))
     Α_diag = zeros(length(diag(Κ_ss)))
     for i in 1 : length(diag(Κ_ss))
         Α_diag[i] = dot(Α[:, i], Α[:, i])

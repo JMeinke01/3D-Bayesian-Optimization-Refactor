@@ -2,7 +2,7 @@ abstract type AbstractKernel end
 function eval_kernel(k::AbstractKernel) end
 
 
-struct RadialBasisFunction{T1, T2} <: AbstractKernel
+mutable struct RadialBasisFunction{T1, T2} <: AbstractKernel
     kernel::T1
     hyperparameters::T2
 end
@@ -24,7 +24,7 @@ end
 
 (rbf::RadialBasisFunction)(x, y) = eval_k(rbf, x, y)    
 
-struct Periodic{T1, T2} <: AbstractKernel
+mutable struct Periodic{T1, T2} <: AbstractKernel
     kernel::T1
     hyperparameters::T2
 end
