@@ -11,11 +11,11 @@ function negative_log_likelihood(Kc::LinearAlgebra.Cholesky, Κ_xx::AbstractMatr
     return α + β + c
 end
 
-function nll(kernel::AbstractKernel, 
-    X::AbstractMatrix{<:Real}, y::AbstractVector{<:Real}, σ::Real)
-    Κ_xx = eval_KXX(kernel, X, σ)
+function nll(kernel::AbstractKernel, X::AbstractMatrix{<:Real}, 
+    y::AbstractVector{<:Real}, σ::Real, Κ_xx::AbstractMatrix{<:Real})
+    # rebuild_kxx!(kernel, Κ_xx, X, σ)
+    Κ_xx = eval_kxx(kernel, X, size(X, 1), σ)
     Kc = cholesky(Κ_xx)
-    # println(size(Kc \ y))
     α = 0.5 * dot(y, Kc \ y)
     β = log(det(Κ_xx))
     c = size(Κ_xx)[1] / 2 * log(π/2)
@@ -54,11 +54,18 @@ function grad_cov_matrix(X::AbstractMatrix{<:Real}, grad::Function, σ::Real)
 end
 
 # Optimizes the hyperparameters and returns new hyperparameters
-function optimize_hypers(θ_init::AbstractVector{<:Real}, 
-    lbs::AbstractVector{<:Real}, ubs::AbstractVector{<:Real}, σ::Real, 
-    kernel::AbstractKernel, X::AbstractMatrix{<:Real}, y::AbstractVector{<:Real})
+function optimize_hypers(
+    θ_init::AbstractVector{<:Real}, 
+    lbs::AbstractVector{<:Real}, 
+    ubs::AbstractVector{<:Real}, 
+    σ::Real, 
+    kernel::AbstractKernel, 
+    X::AbstractMatrix{<:Real}, 
+    y::AbstractVector{<:Real},
+    Κ_xx::AbstractMatrix{<:Real})
     nll_clos = θ -> begin
-        θ = nll(kernel, X, y, σ)
+        kernel.hyperparameters = θ
+        θ = nll(kernel, X, y, σ, Κ_xx)
     end
     res = optimize(nll_clos, lbs, ubs, θ_init, Fminbox(BFGS()))
     println(Optim.minimizer(res))

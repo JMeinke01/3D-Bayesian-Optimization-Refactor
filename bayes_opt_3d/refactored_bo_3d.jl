@@ -9,7 +9,7 @@ include("gaussian_process.jl")
 include("hyper_parameter_opt.jl")
 
 function main()
-    BUDGET = 200
+    BUDGET = 100
     x = range(-10, 10, length = 100)
     y = range(-10, 10, length = 100)
     X = repeat(x, inner = length(y))
@@ -20,7 +20,7 @@ function main()
     num_init_samples = 10 # Initial samples
     σ = 1e-6 # Noise variable
     𝒟 = rand_sample(XY, num_init_samples, f, σ)
-    θ = [1.0, 0.75] # Hyperparameters in the form of (σ, ℓ) or (σ, ℓ, p)
+    θ = [1.0, 1.0] # Hyperparameters in the form of (σ, ℓ) or (σ, ℓ, p)
     rbf = squared_exponential(θ)
     # temp = linear_periodic(θ)
     # temp2 = ∇linear_periodic()
@@ -42,6 +42,7 @@ function main()
     GP = GaussianProcess(μ_pri, rbf.kernel, Κ_ss, Κ_xx, Κ_xs)
     
     for i in num_init_samples : BUDGET
+        println(i)
         # println(rbf.hyperparameters)
         # μ_post, std = predict_f(GP, 𝒟, XY, num_init_samples)
         exp_imp, μ_post = expected_improvement(GP, 𝒟, XY)
@@ -51,18 +52,24 @@ function main()
             GP.Κ_xx = update_KXX!(rbf, GP.Κ_xx, i, 𝒟[:, 1:2], 1e-6)
             GP.Κ_xs = update_kxX!(rbf, GP.Κ_xs, i, 𝒟[:, 1:2], XY)
         end
-        if i % 5 == 0 && (i != num_init_samples || i != BUDGET) 
+        if i % 25 == 0 && (i != num_init_samples && i < BUDGET) 
+            println("in")
+            Κ_xx_v = @view GP.Κ_xx[1 : size(𝒟, 1), 1 : size(𝒟, 1)]
             θ_opt = optimize_hypers(rbf.hyperparameters, [0.01, 0.01], [10.0, 10.0], 1e-6, 
-                rbf, 𝒟[:, 1:2], 𝒟[:, 3])
-            rbf = squared_exponential(θ_opt)
-            Κ_ss = eval_KXX(rbf, XY, 1e-6)
-            Κ_xx = eval_kxx(rbf, 𝒟[:, 1:2], BUDGET, 1e-6)
-            Κ_xs = eval_KxX(rbf, 𝒟[:, 1:2], XY, BUDGET)
+                rbf, 𝒟[:, 1:2], 𝒟[:, 3], Κ_xx_v)
+            rebuild_KXX!(rbf, GP.Κ_ss, XY, 1e-6)
+            rebuild_kxx!(rbf, GP.Κ_xx, 𝒟[:, 1:2], 1e-6)
+            rebuild_kxX!(rbf, GP.Κ_xs, 𝒟[:, 1:2], XY)
+
+            # DELETE LATER
+            # GP.Κ_ss = eval_KXX(rbf, XY, 1e-6)
+            # GP.Κ_xx = eval_kxx(rbf, 𝒟[:, 1:2], BUDGET, 1e-6)
+            # GP.Κ_xs = eval_KxX(rbf, 𝒟[:, 1:2], XY, BUDGET)
         end
         # Z = reshape(μ_post, length(x), length(y))
         Z = reshape(μ_post, length(x), length(y))
         display(plot(x, y, Z, st =:surface))
-        
+        println(minimum(𝒟[:, 3]))
     end
     println(minimum(𝒟[:, 3]))
 end
