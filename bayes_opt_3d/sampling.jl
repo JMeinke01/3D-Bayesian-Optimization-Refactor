@@ -1,4 +1,4 @@
-function rand_sample(X_star::AbstractMatrix{<:Real}, num_samples::Int, 
+@views function rand_sample(X_star::AbstractMatrix{<:Real}, num_samples::Int, 
     f_obj::Function, σ::Real)
     X = zeros(num_samples, 3)
     seen = Set{Tuple{<:Real, <:Real}}()
@@ -18,7 +18,7 @@ function rand_sample(X_star::AbstractMatrix{<:Real}, num_samples::Int,
     return X
 end
 
-function best_sampling_point(acq_func::AbstractMatrix{<:Real}, X_star::AbstractMatrix{<:Real},
+@views function best_sampling_point(acq_func::AbstractVector{<:Real}, X_star::AbstractMatrix{<:Real},
     X::AbstractMatrix{<:Real}, f_obj::Function, σ::Real)
     samp_pt = findmax(acq_func)
     xy = X_star[(samp_pt[2])[1], :]

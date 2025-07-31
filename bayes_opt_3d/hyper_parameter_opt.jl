@@ -2,14 +2,14 @@ using Optim;
 using ForwardDiff;
 using LinearAlgebra;
 
-# Calculates the negative log likelihood to be used
-function negative_log_likelihood(Kc::LinearAlgebra.Cholesky, Κ_xx::AbstractMatrix{<:Real}, 
-    y::AbstractVector{<:Real})
-    α = 0.5 * dot(y, Kc \ y) 
-    β = log(det(Κ_xx))
-    c = size(Κ_xx)[1]/2 * log(π/2)
-    return α + β + c
-end
+# # Calculates the negative log likelihood to be used
+# function negative_log_likelihood(Kc::LinearAlgebra.Cholesky, Κ_xx::AbstractMatrix{<:Real}, 
+#     y::AbstractVector{<:Real})
+#     α = 0.5 * dot(y, Kc \ y) 
+#     β = logdet(Κ_xx)
+#     c = size(Κ_xx)[1]/2 * log(π/2)
+#     return α + β + c
+# end
 
 function nll(kernel::AbstractKernel, X::AbstractMatrix{<:Real}, 
     y::AbstractVector{<:Real}, σ::Real, Κ_xx::AbstractMatrix{<:Real})

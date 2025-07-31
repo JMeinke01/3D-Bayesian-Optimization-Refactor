@@ -21,23 +21,20 @@ function GaussianProcess(μ::T1, kernel::T2, Κ_ss::T3,
     return GaussianProcess{T1, T2, T3}(μ, kernel, Κ_ss, Κ_xx, Κ_xs)
 end
 
-@views function predict_f(GP::AbstractGaussianProcess, X::AbstractMatrix{<:Real}, 
+function predict_f(GP::AbstractGaussianProcess, X::AbstractMatrix{<:Real}, 
     X_star::AbstractMatrix{<:Real})
     Κ_ss = GP.Κ_ss
+    Κ_xx = GP.Κ_xx
+    Κ_xs = GP.Κ_xs
     μ = GP.μ
     len = size(X)[1]
-    Κ_xx_v = GP.Κ_xx[1:len, 1:len]
-    Κ_xs_v = GP.Κ_xs[1:len, 1:size(X_star)[1]]
+    Κ_xx_v = @view Κ_xx[1:len, 1:len]
+    Κ_xs_v = @view Κ_xs[1:len, 1:size(X_star)[1]]
     y = X[:, 3]
     Kc = cholesky(Κ_xx_v)
     μ_post = calculate_μ_post(Kc, y, Κ_xs_v, μ, X, X_star)
     σ_post = calculate_σ_post(Kc, Κ_xs_v, Κ_ss)
-    @inbounds begin
-        @simd for i in length(σ_post)
-            σ_post[i] = sqrt(σ_post[i])
-        end
-    end
-    return μ_post, σ_post
+    return μ_post, sqrt.(σ_post)
 end
 
 
@@ -48,19 +45,14 @@ function calculate_μ_post(Kc::LinearAlgebra.Cholesky, y::AbstractVector{<:Real}
 end
 
 
-@views function calculate_σ_post(Kc::LinearAlgebra.Cholesky, Κ_xs::AbstractMatrix{<:Real}, 
+function calculate_σ_post(Kc::LinearAlgebra.Cholesky, Κ_xs::AbstractMatrix{<:Real}, 
     Κ_ss::AbstractMatrix{<:Real})
     Α = Kc.L \ Κ_xs
     Α_diag = zeros(length(diag(Κ_ss)))
-    σ = zeros(size(Κ_ss, 1))
-    @inbounds begin
-        @simd for i in 1 : length(diag(Κ_ss))
-            Α_diag[i] = dot(Α[:, i], Α[:, i])
-        end
-        @simd for i in 1 : length(σ)
-            σ[i] = Κ_ss[i, i] - Α_diag[i]
-        end
+    for i in 1 : length(diag(Κ_ss))
+        Α_diag[i] = dot(Α[:, i], Α[:, i])
     end
+    σ =  diag(Κ_ss) .- Α_diag
     return σ
 end
 
@@ -68,14 +60,8 @@ function expected_improvement(GP::AbstractGaussianProcess, X::AbstractMatrix{<:R
     X_star::AbstractMatrix{<:Real}; ζ = 0.1)
     μ, σ = predict_f(GP, X, X_star)
     f_opt = minimum(X)
-    imp = zeros(length(μ))
-    z = zeros(length(μ))
-    @inbounds begin
-        @simd for i in length(μ)
-            imp[i] = f_opt - μ[i] - ζ
-            z[i] = imp[i] / σ[i]
-        end 
-    end
+    imp = @. (f_opt - μ - ζ)
+    z = imp ./ σ
     return imp .* cdf.(Ref(Normal()), z) .+ σ .* pdf.(Ref(Normal()), z), μ
 end
 

@@ -50,16 +50,16 @@ function main()
             GP.Κ_xx = update_KXX!(rbf, GP.Κ_xx, i, 𝒟[:, 1:2], 1e-6)
             GP.Κ_xs = update_kxX!(rbf, GP.Κ_xs, i, 𝒟[:, 1:2], XY)
         end
-        if i % 25 == 0 && (i != num_init_samples && i < BUDGET) 
-            println("in")
-        Κ_xx_v = @view GP.Κ_xx[1 : size(𝒟, 1), 1 : size(𝒟, 1)]
-        θ_opt = optimize_hypers(rbf.hyperparameters, [0.01, 0.01], [20.0, 20.0], 1e-6, 
-            rbf, 𝒟[:, 1:2], 𝒟[:, 3], Κ_xx_v)
-        rbf.hyperparameters = θ_opt
-        rebuild_KXX!(rbf, GP.Κ_ss, XY, 1e-6)
-        rebuild_kxx!(rbf, GP.Κ_xx, 𝒟[:, 1:2], 1e-6)
-        rebuild_kxX!(rbf, GP.Κ_xs, 𝒟[:, 1:2], XY)
-        end
+        # if i % 25 == 0 && (i != num_init_samples && i < BUDGET) 
+        #     println("in")
+        # Κ_xx_v = @view GP.Κ_xx[1 : size(𝒟, 1), 1 : size(𝒟, 1)]
+        # θ_opt = optimize_hypers(rbf.hyperparameters, [0.01, 0.01], [20.0, 20.0], 1e-6, 
+        #     rbf, 𝒟[:, 1:2], 𝒟[:, 3], Κ_xx_v)
+        # rbf.hyperparameters = θ_opt
+        # rebuild_KXX!(rbf, GP.Κ_ss, XY, 1e-6)
+        # rebuild_kxx!(rbf, GP.Κ_xx, 𝒟[:, 1:2], 1e-6)
+        # rebuild_kxX!(rbf, GP.Κ_xs, 𝒟[:, 1:2], XY)
+        # end
         # Z = reshape(μ_post, length(x), length(y))
         # display(plot(x, y, Z, ylabel = "y", xlabel = "x", st =:surface, title = "Untuned Hyperparameter Surrogate"))
     

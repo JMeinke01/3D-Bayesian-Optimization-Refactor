@@ -93,12 +93,9 @@ end
 # Constucts the square exponential kernel function
 function squared_exponential_κ(x::AbstractArray{Float64}, x_other::AbstractArray{Float64}, 
     θ::AbstractVector{<:Real})
-    dist = zero(Float64)
     @assert size(x) == size(x_other)
-    @inbounds for i in 1 : length(x)
-        diff = x[i] - x_other[i]
-        dist += diff * diff
-    end
+    diff = x - x_other
+    dist = diff' * diff
     return  θ[1]^2 * exp(-dist / (2 * θ[2]^2))
 end
 
