@@ -122,41 +122,47 @@ The functions below modify the various covariance matrices in place enabling min
 memory re-allocation/waste when optimizing the hyperparameters and re-evaluating all matrices
 =#
 
-function rebuild_KXX!(kernel::AbstractKernel, Κ::AbstractMatrix{<:Real}, 
+@views function rebuild_KXX!(kernel::AbstractKernel, Κ::AbstractMatrix{<:Real}, 
     X::AbstractMatrix{<:Real}, σ::Real)
     N = size(X, 1)
-    for i in 1 : N
-        for j in i : N
-            Κ[i,j] = eval_k(kernel, X[i, :], X[j, :])
-            Κ[j, i] = Κ[i, j]
-            if i == j
-                Κ[i, j] += σ
+    @inbounds begin
+        for i in 1 : N
+            @simd for j in i : N
+                Κ[i,j] = eval_k(kernel, X[i, :], X[j, :])
+                Κ[j, i] = Κ[i, j]
+                if i == j
+                    Κ[i, j] += σ
+                end
             end
         end
     end
 end
 
-function rebuild_kxx!(kernel::AbstractKernel, Κ::AbstractMatrix{<:Real},
+@views function rebuild_kxx!(kernel::AbstractKernel, Κ::AbstractMatrix{<:Real},
     X::AbstractMatrix{<:Real}, σ::Real)
     N = size(X, 1)
-    for i in 1 : N
-        for j in i : N
-            Κ[i,j] = eval_k(kernel, X[i, :], X[j, :])
-            Κ[j, i] = Κ[i, j]
-            if i == j
-                Κ[i, j] += σ
+    @inbounds begin
+        for i in 1 : N
+            @simd for j in i : N
+                Κ[i,j] = eval_k(kernel, X[i, :], X[j, :])
+                Κ[j, i] = Κ[i, j]
+                if i == j
+                    Κ[i, j] += σ
+                end
             end
         end
     end
 end
 
-function rebuild_kxX!(kernel::AbstractKernel, Κ::AbstractMatrix{<:Real},
+@views function rebuild_kxX!(kernel::AbstractKernel, Κ::AbstractMatrix{<:Real},
     X::AbstractMatrix{<:Real}, X_star::AbstractMatrix{<:Real})
     m = size(X)[1]
     N = size(X_star)[1]
-    for i in 1 : N
-        for j in 1 : m
-            Κ[j, i] = eval_k(kernel, X[j, :], X_star[i, :])
-        end        
+    @inbounds begin
+        for i in 1 : N
+            @simd for j in 1 : m
+                Κ[j, i] = eval_k(kernel, X[j, :], X_star[i, :])
+            end        
+        end
     end
 end
